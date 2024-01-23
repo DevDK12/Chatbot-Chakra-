@@ -30,7 +30,6 @@ const Chat = () => {
 
 
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -56,28 +55,31 @@ const Chat = () => {
                 }),
             })
 
+            if (res.status === 429) throw new Error('Too many requests, please wait');
+            if (res.status === 500) throw new Error('Internal server error');
+            if (res.status === 503) throw new Error('Service unavailable');
+            if (!res.ok) throw new Error('An unknown error occurred');
+
             if(!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             
             const data = await res.json();
 
-            console.log('Success:', data);
+            console.log(data.status);
 
             setIsLoading(false);
             
-            console.log(data.message)
+            console.log(data.message.content)
             setMessages(messages => [...messages, {
                 role: 'Bot',
-                msg: data.message,
+                msg: data.message.content,
             }]);
 
         }
         catch(error){
-            setError(error.msg)
+            setIsLoading(false);
+            //_ Throw toast for error 
             console.error('Error:', error);
         }
-
-
-
     
         setMsg('');
     };
@@ -131,15 +133,6 @@ const Chat = () => {
                         </Flex>
                     }
 
-                    {
-                        error && 
-                        <Flex alignItems="flex-center" mb={4}>
-                            <Box as={GoHubot} h='35px' w='35px' name="Bot" ml={2} />
-                            <Text mr={2} color={`green.500`}  fontSize="md" p={2} borderRadius="lg" w='100%' >
-                                {error} 
-                            </Text>
-                        </Flex>
-                    }
 
                     </Flex>
                     <form onSubmit={handleSubmit}>
