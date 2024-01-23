@@ -1,27 +1,26 @@
-import { Box, Flex, Text, Input, Avatar, Container , IconButton} from '@chakra-ui/react';
-
 import {FaArrowRight} from 'react-icons/fa'
-import { GoHubot } from "react-icons/go";
-import { faker } from '@faker-js/faker';
 import { useState } from 'react';
 
+import { Box, Flex, Input,  Container , IconButton} from '@chakra-ui/react';
+
+import ChatList from './ChatList';
+import ChatItem from './ChatItem';
 
 
 
-const user = faker.image.avatarLegacy();
 
-const data = [
-    {
-        msg: 'Hi there! How can I assist you today?',
-        role: 'Bot',
-    },
-]
+
 
 
 
 const Chat = () => {
 
-    const [messages, setMessages] = useState(data);
+    const [messages, setMessages] = useState([
+        {
+            msg: 'Hi there! How can I assist you today?',
+            role: 'Bot',
+        },
+    ]);
 
     const [msg, setMsg] = useState('');
     const changeHandler = (e) => {
@@ -30,15 +29,20 @@ const Chat = () => {
 
 
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
     
         //_ validate input 
+        if(msg === ''){
+            setMessages(messages => [...messages, {
+                role: 'Bot',
+                msg: 'Oops! You forgot to type your message',
+            }]);
+            return;
+        }
 
         setMessages(messages => [...messages, {
-            url: user,
             msg: msg,
             role: 'User',
         }]);
@@ -56,7 +60,12 @@ const Chat = () => {
                 }),
             })
 
-            if(!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            if (res.status === 400) throw new Error('Bad request');
+            if (res.status === 408) throw new Error('Request timeout');
+            if (res.status === 429) throw new Error('Too many requests, please wait');
+            if (res.status === 500) throw new Error('Internal server error');
+            if (res.status === 503) throw new Error('Service unavailable');
+            if (!res.ok) throw new Error('An unknown error occurred');
             
             const data = await res.json();
 
@@ -72,13 +81,12 @@ const Chat = () => {
 
         }
         catch(error){
-            setError(error.msg)
+            setIsLoading(false);
+
+            //_ Use toast to send error to UI
             console.error('Error:', error);
         }
 
-
-
-    
         setMsg('');
     };
 
@@ -91,57 +99,27 @@ const Chat = () => {
             <Flex alignItems="center" justifyContent="center" placeItems="center" h='100vh' w="60vw" >
 
                 <Box p={5} bg="white" borderRadius="lg" w="100%"  boxShadow="md">
-                    <Flex direction="column" mb={6}  p={4}  borderWidth={1} borderRadius="lg" h='80vh' 
-                    overflowY="scroll"
-                    css={{
-                        '&::-webkit-scrollbar': {
-                            display: 'none',
-                        },
-                        '-ms-overflow-style': 'none',  /* IE and Edge */
-                        'scrollbar-width': 'none',  /* Firefox */
-                    }}
-                >
-
-                    {messages.map((entry, id) => {
-                        return (
-                            entry.role === 'User' ?
-                            <Flex key={id} alignItems="flex-center" mb={4}>
-                                <Avatar h='35px' w='35px' name="User" src={entry.url}  mr={2} />
-                                <Text mr={2} color={`${entry.color}.500`}  fontSize="md" p={2} borderRadius="lg" w='100%' >
-                                    {entry.msg}
-                                </Text>
-                            </Flex>
-                            :
-                            <Flex key={id} alignItems="flex-center" mb={4}>
-                                <Box as={GoHubot} h='35px' w='35px' name="Bot" ml={2} />
-                                <Text mr={2} color={`green.500`}  fontSize="md" p={2} borderRadius="lg" w='100%' >
-                                    {entry.msg}
-                                </Text>
-                            </Flex>
-                        );
-                    })}
-
-                    {
-                        isLoading && 
-                        <Flex alignItems="flex-center" mb={4}>
-                            <Box as={GoHubot} h='35px' w='35px' name="Bot" ml={2} />
-                            <Text mr={2} color={`green.500`}  fontSize="md" p={2} borderRadius="lg"  w='100%' >
-                                Thinking ... ... 
-                            </Text>
-                        </Flex>
-                    }
-
-                    {
-                        error && 
-                        <Flex alignItems="flex-center" mb={4}>
-                            <Box as={GoHubot} h='35px' w='35px' name="Bot" ml={2} />
-                            <Text mr={2} color={`green.500`}  fontSize="md" p={2} borderRadius="lg" w='100%' >
-                                {error} 
-                            </Text>
-                        </Flex>
-                    }
-
+                    <Flex 
+                        direction="column" 
+                        mb={6}  p={4}  h='80vh'
+                        borderWidth={1} 
+                        borderRadius="lg"  
+                        overflowY="scroll"
+                        css={{
+                            '&::-webkit-scrollbar': {
+                                display: 'none',
+                            },
+                        }}
+                    >
+                        <ChatList messages={messages} />
+                        {isLoading && 
+                            <ChatItem 
+                                role='Bot'
+                                msg='Thinking...'
+                            />
+                        }
                     </Flex>
+
                     <form onSubmit={handleSubmit}>
                         <Box position="relative" >
                             <Input
