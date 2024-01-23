@@ -1,0 +1,30 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server",
+    "dev": "nodemon server",
+    "prod": "SET NODE_ENV=production& nodemon server"
+  },
+  "keywords": [],
+  "author": "Dev Kumar Gupta",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "date-fns": "^3.0.6",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "http-status": "^1.7.3",
+    "uuid": "^9.0.1",
+    "xss-clean": "^0.1.4"
+  }
+}
