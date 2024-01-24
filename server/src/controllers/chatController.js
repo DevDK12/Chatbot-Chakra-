@@ -24,13 +24,14 @@ export const postChat = CatchAsync(async (req, res, next) => {
             { role: "system", content: "You are a helpful assistant." },
             { role: "user", content: prompt }
         ],
-        model: "gpt-3.5-turbo",
-        max_tokens: 2,
+        model: "gpt-3.5-turbo-1106",
+        max_tokens: 25,
     });
 
     console.log(completion.choices[0]);
 
     const response = completion.choices[0].message;
+
     // const response = {
     //     role: 'assistant',
     //     content: 'This is mock response'
